@@ -297,7 +297,7 @@ func main() {
 				os.Exit(ex.ExitCode())
 			}
 			fmt.Fprintf(os.Stderr, "Running llamacc: %s\n", err.Error())
-			fmt.Fprintf(os.Stderr, "Fallback to local compilation ...\n")
+			fmt.Fprintf(os.Stderr, "Fallback to local compilation ...\n%v\n", os.Args)
 		} else {
 			os.Exit(0)
 		}
