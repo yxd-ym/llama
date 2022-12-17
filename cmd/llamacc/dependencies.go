@@ -70,21 +70,37 @@ func detectDependencies(ctx context.Context, client *daemon.Client, cfg *Config,
 
 	deplist, err := parseMakeDeps(deps.Bytes())
 
-	deplist = removePaths(deplist, includePath.Paths)
+	preserve := []string{}
+	for _, inc := range comp.Includes {
+		preserve = append(preserve, inc.Path)
+	}
+	deplist = removePaths(deplist, includePath.Paths, preserve)
 
 	span.AddField("count", len(deplist))
 	return deplist, err
 }
 
-func removePaths(paths []string, remove []string) []string {
+func removePaths(paths []string, remove []string, preserve []string) []string {
 	out := 0
 outer:
 	for in := 0; in != len(paths); in++ {
+		// If the header is to be preserved, just preserve and continue.
+		for _, pfx := range preserve {
+			if strings.HasPrefix(paths[in], pfx) {
+				paths[out] = paths[in]
+				out++
+				continue outer
+			}
+		}
+
+		// If the header is to be removed, just remove it.
 		for _, pfx := range remove {
 			if strings.HasPrefix(paths[in], pfx) {
 				continue outer
 			}
 		}
+
+		// Just preserve it because it is not removed.
 		paths[out] = paths[in]
 		out++
 	}
